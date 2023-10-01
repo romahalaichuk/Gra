@@ -162,20 +162,45 @@
 				}
 			}
 
-			// W funkcji gameLoop po zebraniu każdej monety, zwiększ collectedCoins i sprawdź, czy należy wygenerować przeciwnika.
-			coins.forEach((coin, index) => {
-				if (
-					player.x < coin.x + coin.width &&
-					player.x + player.width > coin.x &&
-					player.y + player.height > coin.y &&
-					player.y < coin.y + coin.height
-				) {
-					coins.splice(index, 1);
-					score++;
-					collectedCoins++;
-					checkCollectedCoins(); // Sprawdź, czy należy wygenerować przeciwnika
-					generateCoin();
+			function handlePlayerJump() {
+				if (!player.jumping) {
+					player.jumping = true;
+					player.jumpPower = 40;
 				}
+			}
+
+			function handlePlayerMoveLeft() {
+				player.isMovingLeft = true;
+				player.isMovingRight = false;
+			}
+
+			function handlePlayerMoveRight() {
+				player.isMovingLeft = false;
+				player.isMovingRight = true;
+			}
+
+			function handlePlayerStop() {
+				player.isMovingLeft = false;
+				player.isMovingRight = false;
+			}
+
+			canvas.addEventListener("touchstart", () => {
+				handlePlayerJump();
+			});
+
+			canvas.addEventListener("touchmove", (event) => {
+				const touchX = event.touches[0].clientX;
+				const canvasCenterX = canvas.width / 2;
+
+				if (touchX < canvasCenterX) {
+					handlePlayerMoveLeft();
+				} else {
+					handlePlayerMoveRight();
+				}
+			});
+
+			canvas.addEventListener("touchend", () => {
+				handlePlayerStop();
 			});
 
 			function gameLoop() {
@@ -248,6 +273,8 @@
 					) {
 						coins.splice(index, 1);
 						score++;
+						collectedCoins++;
+						checkCollectedCoins(); // Sprawdź, czy należy wygenerować przeciwnika
 						generateCoin();
 					}
 				});
@@ -299,27 +326,6 @@
 
 				requestAnimationFrame(gameLoop);
 			}
-
-			document.addEventListener("keydown", (event) => {
-				if (event.key === "ArrowUp" && !player.jumping) {
-					player.jumping = true;
-				}
-				if (event.key === "ArrowLeft") {
-					player.isMovingLeft = true;
-				}
-				if (event.key === "ArrowRight") {
-					player.isMovingRight = true;
-				}
-			});
-
-			document.addEventListener("keyup", (event) => {
-				if (event.key === "ArrowLeft") {
-					player.isMovingLeft = false;
-				}
-				if (event.key === "ArrowRight") {
-					player.isMovingRight = false;
-				}
-			});
 
 			function gameOver() {
 				ctx.clearRect(0, 0, canvas.width, canvas.height);
